@@ -250,10 +250,10 @@ export class SatelliteProcess implements Satellite {
       this.notifier.subscribeToAuthStateChanges(authStateHandler)
 
     // Monitor connectivity state changes.
-    const connectivityStateHandler = ({
+    const connectivityStateHandler = async ({
       connectivityState,
     }: ConnectivityStateChangeNotification) => {
-      this._connectivityStateChanged(connectivityState)
+      await this._connectivityStateChanged(connectivityState)
     }
     this._connectivityChangeSubscription =
       this.notifier.subscribeToConnectivityStateChanges(
@@ -636,11 +636,11 @@ export class SatelliteProcess implements Satellite {
   }
 
   // handles async client erros: can be a socket error or a server error message
-  _handleClientError(satelliteError: SatelliteError) {
+  async _handleClientError(satelliteError: SatelliteError) {
     if (this.initializing && !this.initializing.finished) {
       if (satelliteError.code === SatelliteErrorCode.SOCKET_ERROR) {
         Log.warn(`an unexpected socket error occurred. retrying connection`)
-        this._connectivityStateChanged('available')
+        await this._connectivityStateChanged('available')
       } else {
         throw satelliteError
       }
@@ -648,8 +648,8 @@ export class SatelliteProcess implements Satellite {
     }
 
     // all other errors are handled by closing the client (if not yet) and retrying
-    this._connectivityStateChanged('disconnected').then(() =>
-      this._connectivityStateChanged('available')
+    await this._connectivityStateChanged('disconnected').then(async () =>
+      await this._connectivityStateChanged('available')
     )
   }
 
