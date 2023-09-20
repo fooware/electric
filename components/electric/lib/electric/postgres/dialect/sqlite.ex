@@ -317,6 +317,11 @@ defmodule Electric.Postgres.Dialect.SQLite do
     @types[:text] <> sized(size)
   end
 
+  # NOTE(alco): temporary catch-all to pass for enum types
+  def do_map_type(_t, size) do
+    @types[:text] <> sized(size)
+  end
+
   defp sized([]), do: ""
 
   defp sized(s),

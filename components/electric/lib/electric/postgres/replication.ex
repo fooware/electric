@@ -11,6 +11,7 @@ defmodule Electric.Postgres.Replication do
       :name,
       :type,
       :nullable?,
+      :oid,
       type_modifier: -1,
       part_of_identity?: false
     ]
@@ -21,6 +22,7 @@ defmodule Electric.Postgres.Replication do
             name: name(),
             type: atom(),
             nullable?: boolean(),
+            oid: pos_integer(),
             type_modifier: integer(),
             part_of_identity?: boolean() | nil
           }
