@@ -320,6 +320,61 @@ importers:
         specifier: ^5.1.3
         version: 5.1.3
 
+  examples/web-wa-sqlite:
+    dependencies:
+      electric-sql:
+        specifier: latest
+        version: 0.6.2(react-dom@18.2.0)(react@18.2.0)(wa-sqlite@0.9.5)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      wa-sqlite:
+        specifier: rhashimoto/wa-sqlite#master
+        version: github.com/rhashimoto/wa-sqlite/a856e82f1f5736892539f6d05abbb569dd59011b
+    devDependencies:
+      '@databases/pg':
+        specifier: ^5.4.1
+        version: 5.4.1
+      '@electric-sql/debug-toolbar':
+        specifier: workspace:*
+        version: link:../../toolbar
+      '@electric-sql/prisma-generator':
+        specifier: workspace:*
+        version: link:../../generator
+      '@prisma/client':
+        specifier: 4.8.1
+        version: 4.8.1(prisma@4.8.1)
+      '@types/node':
+        specifier: '>=16.11.0'
+        version: 16.18.34
+      '@types/react':
+        specifier: ^18.0.18
+        version: 18.2.7
+      '@types/react-dom':
+        specifier: ^18.0.11
+        version: 18.2.4
+      esbuild:
+        specifier: ^0.16.17
+        version: 0.16.17
+      esbuild-plugin-inline-image:
+        specifier: ^0.0.9
+        version: 0.0.9
+      fs-extra:
+        specifier: ^10.0.0
+        version: 10.0.0
+      prisma:
+        specifier: 4.8.1
+        version: 4.8.1
+      shelljs:
+        specifier: ^0.8.5
+        version: 0.8.5
+      typescript:
+        specifier: ^4.4.3
+        version: 4.9.5
+
   generator:
     dependencies:
       '@prisma/generator-helper':
@@ -6458,7 +6513,6 @@ packages:
       - bufferutil
       - encoding
       - utf-8-validate
-    dev: true
 
   /electron-to-chromium@1.4.416:
     resolution: {integrity: sha512-AUYh0XDTb2vrj0rj82jb3P9hHSyzQNdTPYWZIhPdCOui7/vpme7+HTE07BE5jwuqg/34TZ8ktlRz6GImJ4IXjA==}
@@ -10715,7 +10769,7 @@ packages:
     resolution: {integrity: sha512-QB0MMv+tn9Ur2DtJrc8y09n0n6sw88CyDniWSX2cHW10goQXYPK9ZpFJOktDS4ron501edPX6h9i7Pg+RnH5nQ==}
     engines: {node: '>=10'}
     dependencies:
-      semver: 7.5.1
+      semver: 7.5.4
 
   /node-dir@0.1.17:
     resolution: {integrity: sha512-tmPX422rYgofd4epzrNoOXiE8XFZYOcCq1vD7MAXCDO+O+zndlA2ztdKKMa+EeuBG5tHETpr4ml4RGgpqDCCAg==}
@@ -11290,7 +11344,7 @@ packages:
       got: 12.6.0
       registry-auth-token: 5.0.2
       registry-url: 6.0.1
-      semver: 7.5.1
+      semver: 7.5.4
     dev: true
 
   /packet-reader@1.0.0:
@@ -11573,7 +11627,7 @@ packages:
       https-proxy-agent: 5.0.1
       node-fetch: 2.6.11
       progress: 2.0.3
-      semver: 7.5.1
+      semver: 7.5.4
       tar-fs: 2.1.1
       yargs: 16.2.0
     transitivePeerDependencies:
@@ -12649,7 +12703,7 @@ packages:
     resolution: {integrity: sha512-0Ju4+6A8iOnpL/Thra7dZsSlOHYAHIeMxfhWQRI1/VLcT3WDBZKKtQt/QkBOsiIN9ZpuvHE6cGZ0x4glCMmfiA==}
     engines: {node: '>=12'}
     dependencies:
-      semver: 7.5.1
+      semver: 7.5.4
     dev: true
 
   /semver@5.7.1:
@@ -14720,4 +14774,3 @@ packages:
     resolution: {tarball: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/a856e82f1f5736892539f6d05abbb569dd59011b}
     name: wa-sqlite
     version: 0.9.5
-    dev: true
