@@ -5,9 +5,10 @@ CREATE TABLE IF NOT EXISTS "appointments" (
     "phone" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "comments" TEXT NOT NULL,
     "start" TEXT NOT NULL,
     "end" TEXT NOT NULL,
+    "cancelled" INTEGER NOT NULL,
     CONSTRAINT "appointments_pkey" PRIMARY KEY ("id")
 );
 
