@@ -1,0 +1,108 @@
+.electric-draw {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  --grid-size: calc(min(90vw, 80vh) - 100px);
+  --square-size: calc(var(--grid-size) / 32);
+  --border: 0.5px solid #333;
+}
+
+.electric-draw__grid {
+  position: relative;
+  display: grid;
+  gap: 0;
+  width: var(--grid-size);
+  height: var(--grid-size);
+  border: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.electric-draw__pixel {
+  width: 100%;
+  height: 100%;
+  border: var(--border);
+  margin: -0.5px;
+}
+
+.electric-draw__color-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.electric-draw__color-picker__color {
+  border: var(--border);
+  margin: -0.5px;
+  width: var(--square-size);
+  height: var(--square-size);
+}
+
+.electric-draw__reset-button {
+  border: var(--border);
+  background-color: #222;
+  border-radius: 5px;
+  padding: 0;
+  margin-top: 10px;
+  width: var(--square-size);
+  height: var(--square-size);
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.electric-draw__reset-button > svg {
+  width: 75%;
+  height: 75%;
+  display: block;
+}
+
+.electric-draw__reset-button:hover {
+  background-color: #333;
+}
+
+.electric-draw__grid-wrapper {
+  position: relative;
+}
+
+.electric-draw__presence {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.electric-draw__presence__item {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transition: transform 110ms linear;
+}
+
+.electric-draw__presence__item__icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-80%, -20%);
+}
+
+.electric-draw__presence__item__color {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-27px, 13px);
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1.5px solid #fff;
+}
