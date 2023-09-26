@@ -27,3 +27,10 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# Generated ElectricSQL client
+src/generated/
+
+# wa-sqlite files
+public/wa-sqlite-async.mjs
+public/wa-sqlite-async.wasm
