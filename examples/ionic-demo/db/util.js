@@ -26,7 +26,7 @@ export function fetchHostPortPG() {
 // Returns undefined if the port is not bound or container does not exist.
 function fetchHostPort(container, containerPort) {
   const output = shell.exec(
-    `docker inspect --format='{{(index (index .NetworkSettings.Ports "${containerPort}/tcp") 0).HostPort}}' ${container}`
+    `docker inspect --format='{{(index (index .NetworkSettings.Ports "${containerPort}/tcp") 0).HostPort}}' ${container}`,
   )
   const port = parseInt(output)
   if (!isNaN(port)) {

@@ -7,7 +7,7 @@ if (process.argv.length === 4) {
 
   if (command !== '-db') {
     console.error(
-      `Unsupported option ${command}. Only '-db' option is supported.`
+      `Unsupported option ${command}. Only '-db' option is supported.`,
     )
 
     process.exit(1)
@@ -16,13 +16,13 @@ if (process.argv.length === 4) {
   db = process.argv[3]
 } else if (process.argv.length !== 2) {
   console.log(
-    'Wrong number of arguments provided. Only one optional argument `-db <Postgres connection url>` is supported.'
+    'Wrong number of arguments provided. Only one optional argument `-db <Postgres connection url>` is supported.',
   )
 }
 
 if (db === undefined) {
   console.error(
-    `Database URL is not provided. Please provide one using the DATABASE_URL environment variable.`
+    `Database URL is not provided. Please provide one using the DATABASE_URL environment variable.`,
   )
 
   process.exit(1)
@@ -36,5 +36,5 @@ shell.exec(
       -e "LOGICAL_PUBLISHER_HOST=localhost" \
       -e "AUTH_MODE=insecure" \
       -p 5133:5133 \
-      -p 5433:5433 ${electric}`
+      -p 5433:5433 ${electric}`,
 )

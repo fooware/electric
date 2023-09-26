@@ -62,6 +62,7 @@
     "eslint-plugin-react": "^7.32.2",
     "fs-extra": "^10.0.0",
     "jsdom": "^22.1.0",
+    "prettier": "3.0.3",
     "prisma": "4.8.1",
     "shelljs": "^0.8.5",
     "typescript": "^5.1.6",
