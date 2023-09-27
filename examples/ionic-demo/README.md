@@ -20,6 +20,8 @@ TODO...
 
 You need Docker, Docker Compose v2 and Nodejs >= 16.14.
 
+For building the Capacitor iOS and Android targets you need to follow the environment setup instructions here: https://capacitorjs.com/docs/getting-started/environment-setup
+
 ## Install
 
 Clone this repo and change directory into this folder:
