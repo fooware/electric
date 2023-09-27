@@ -17,12 +17,12 @@ const Thanks: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/"></IonBackButton>
           </IonButtons>
-          <IonTitle>Thankyou</IonTitle>
+          <IonTitle>Thank you</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent color="light" className="ion-padding">
         <h1 className="ion-padding ion-text-center">
-          Thankyou for booking an appointment with us.
+          Thank you for booking an appointment with us.
         </h1>
         <IonButton routerLink="/" expand="block">
           Back to Home

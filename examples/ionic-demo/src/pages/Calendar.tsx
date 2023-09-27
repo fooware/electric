@@ -17,10 +17,15 @@ import {
   IonModal,
   IonTextarea,
   IonToggle,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
 } from '@ionic/react'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useLiveQuery } from 'electric-sql/react'
 import { useElectric, Appointment as AppointmentBase } from '../electric'
+
+import './Calendar.css'
 
 type Appointment = AppointmentBase & {
   hasClash?: boolean
@@ -66,19 +71,21 @@ const Calendar: React.FC = () => {
       const appointmentStart = new Date(appointment.start)
       const appointmentEnd = new Date(appointment.end)
       const appointmentId = appointment.id
-      const hasClash = results.some((otherAppointment) => {
-        const otherAppointmentStart = new Date(otherAppointment.start)
-        const otherAppointmentEnd = new Date(otherAppointment.end)
-        const otherAppointmentId = otherAppointment.id
-        if (appointmentId === otherAppointmentId) return false
-        if (
-          appointmentStart.getTime() < otherAppointmentEnd.getTime() &&
-          appointmentEnd.getTime() > otherAppointmentStart.getTime()
-        ) {
-          return true
-        }
-        return false
-      })
+      const hasClash = results
+        .filter((appointment) => !appointment.cancelled)
+        .some((otherAppointment) => {
+          const otherAppointmentStart = new Date(otherAppointment.start)
+          const otherAppointmentEnd = new Date(otherAppointment.end)
+          const otherAppointmentId = otherAppointment.id
+          if (appointmentId === otherAppointmentId) return false
+          if (
+            appointmentStart.getTime() < otherAppointmentEnd.getTime() &&
+            appointmentEnd.getTime() > otherAppointmentStart.getTime()
+          ) {
+            return true
+          }
+          return false
+        })
       appointments.push({ ...appointment, hasClash })
     })
     return appointments
@@ -100,19 +107,32 @@ const Calendar: React.FC = () => {
   const dayCounts = useMemo(() => {
     if (!results) return {}
     const dayCounts: { [day: string]: number } = {}
-    results.forEach((appointment) => {
-      const appointmentDay = new Date(appointment.start).getDate()
-      if (dayCounts[appointmentDay]) {
-        dayCounts[appointmentDay]++
-      } else {
-        dayCounts[appointmentDay] = 1
-      }
-    })
+    results
+      .filter((appointment) => !appointment.cancelled)
+      .forEach((appointment) => {
+        const appointmentDay = new Date(appointment.start).getDate()
+        if (dayCounts[appointmentDay]) {
+          dayCounts[appointmentDay]++
+        } else {
+          dayCounts[appointmentDay] = 1
+        }
+      })
     return dayCounts
   }, [results])
 
   const onModalDismiss = (ev: any) => {
     setSelectedAppointment(undefined)
+  }
+
+  const updatedCanceled = (appointment: Appointment, cancelled: boolean) => {
+    db.appointments.update({
+      where: {
+        id: appointment.id,
+      },
+      data: {
+        cancelled: cancelled ? 1 : 0,
+      },
+    })
   }
 
   return (
@@ -153,6 +173,8 @@ const Calendar: React.FC = () => {
               key={appointment.id}
               appointment={appointment}
               onClick={() => setSelectedAppointment(appointment)}
+              onCancel={() => updatedCanceled(appointment, true)}
+              onUnCancel={() => updatedCanceled(appointment, false)}
             />
           ))}
         </IonList>
@@ -179,42 +201,63 @@ const Calendar: React.FC = () => {
 const Row = ({
   appointment,
   onClick,
+  onCancel,
+  onUnCancel,
 }: {
   appointment: Appointment
   onClick: () => void
+  onCancel: () => void
+  onUnCancel: () => void
 }) => {
   return (
-    <IonItem
-      button={true}
-      detail={false}
-      style={{
-        opacity: appointment.cancelled ? 0.5 : 1,
-      }}
-      onClick={onClick}
-    >
-      <div slot="start">
-        <IonNote color={appointment.hasClash ? 'danger' : 'medium'}>
-          {new Date(appointment.start).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+    <IonItemSliding>
+      <IonItem
+        button={true}
+        detail={false}
+        className={appointment.cancelled ? 'cancelled-item' : ''}
+        onClick={onClick}
+      >
+        <div slot="start">
+          <IonNote color={appointment.hasClash ? 'danger' : 'medium'}>
+            {new Date(appointment.start).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+            <br />
+            {new Date(appointment.end).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </IonNote>
+        </div>
+        <IonLabel>
+          {!!appointment.cancelled && (
+            <IonText color="danger">Cancelled: </IonText>
+          )}
+          <strong>{appointment.name}</strong>{' '}
+          <IonText>{appointment.email}</IonText>
           <br />
-          {new Date(appointment.end).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </IonNote>
-      </div>
-      <IonLabel>
-        {appointment.cancelled && <IonText color="danger">Cancelled: </IonText>}
-        <strong>{appointment.name}</strong>{' '}
-        <IonText>{appointment.email}</IonText>
-        <br />
-        <IonNote color="medium" className="ion-text-wrap">
-          {appointment.comments || '-'}
-        </IonNote>
-      </IonLabel>
-    </IonItem>
+          <IonNote color="medium" className="ion-text-wrap">
+            {appointment.comments || '-'}
+          </IonNote>
+        </IonLabel>
+      </IonItem>
+      <IonItemOptions>
+        <IonItemOption color="secondary" onClick={onClick}>
+          Edit
+        </IonItemOption>
+        {!appointment.cancelled && (
+          <IonItemOption color="danger" onClick={onCancel}>
+            Cancel
+          </IonItemOption>
+        )}
+        {!!appointment.cancelled && (
+          <IonItemOption color="success" onClick={onUnCancel}>
+            Un-cancel
+          </IonItemOption>
+        )}
+      </IonItemOptions>
+    </IonItemSliding>
   )
 }
 
