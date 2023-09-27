@@ -8,7 +8,7 @@ import { authToken } from './auth'
 import { DEBUG_MODE, ELECTRIC_URL } from './config'
 import { Electric, Pixels, schema } from './generated/client'
 
-import './ElectricDraw.css'
+import './ElectricPixels.css'
 
 const { ElectricProvider, useElectric } = makeElectricContext<Electric>()
 
@@ -18,7 +18,7 @@ interface PixelMap {
   [coord: string]: string
 }
 
-export const ElectricDrawApp = () => {
+export const ElectricPixelsApp = () => {
   const [electric, setElectric] = useState<Electric>()
   const [defaultPixels, setDefaultPixels] = useState<PixelMap>()
 
@@ -68,12 +68,12 @@ export const ElectricDrawApp = () => {
 
   return (
     <ElectricProvider db={electric}>
-      <ElectricDraw defaultPixels={defaultPixels} />
+      <ElectricPixels defaultPixels={defaultPixels} />
     </ElectricProvider>
   )
 }
 
-export const ElectricDraw = ({
+export const ElectricPixels = ({
   defaultPixels,
 }: {
   defaultPixels: PixelMap
@@ -175,13 +175,13 @@ export const ElectricDraw = ({
   }, [])
 
   return (
-    <div className="electric-draw">
+    <div className="electric-pixels">
       <div>
-        <div className="electric-draw__color-picker">
+        <div className="electric-pixels__color-picker">
           {colorOptions.map((color) => (
             <div
               key={color}
-              className="electric-draw__color-picker__color"
+              className="electric-pixels__color-picker__color"
               style={{
                 backgroundColor: color,
                 outline: color === selectedColor ? '2px solid black' : 'none',
@@ -195,7 +195,7 @@ export const ElectricDraw = ({
         <button
           type="button"
           onClick={reset}
-          className="electric-draw__reset-button"
+          className="electric-pixels__reset-button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -212,11 +212,11 @@ export const ElectricDraw = ({
           </svg>
         </button>
       </div>
-      <div className="electric-draw__grid-wrapper">
+      <div className="electric-pixels__grid-wrapper">
         <Presence />
         <div
           ref={canvasEl}
-          className="electric-draw__grid"
+          className="electric-pixels__grid"
           style={{
             gridTemplateColumns: `repeat(${width}, 1fr)`,
             gridTemplateRows: `repeat(${height}, 1fr)`,
@@ -259,7 +259,7 @@ const Pixel = ({
 }) => {
   return (
     <div
-      className="electric-draw__pixel"
+      className="electric-pixels__pixel"
       onMouseOver={() => {
         if (mouseIsDown) {
           drawPixel(x, y)
@@ -293,11 +293,11 @@ const Presence = () => {
   )
 
   return (
-    <div className="electric-draw__presence">
+    <div className="electric-pixels__presence">
       {results?.map((presence) => (
         <div
           key={presence.id}
-          className="electric-draw__presence__item"
+          className="electric-pixels__presence__item"
           style={{
             transform: `translate(${parseFloat(presence.x) * 100}%, ${
               parseFloat(presence.y) * 100
@@ -310,12 +310,12 @@ const Presence = () => {
             height="24"
             fill="#fff"
             viewBox="0 0 16 16"
-            className="electric-draw__presence__item__icon"
+            className="electric-pixels__presence__item__icon"
           >
             <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103zM2.25 8.184l3.897 1.67a.5.5 0 0 1 .262.263l1.67 3.897L12.743 3.52 2.25 8.184z" />
           </svg>
           <div
-            className="electric-draw__presence__item__color"
+            className="electric-pixels__presence__item__color"
             style={{
               backgroundColor: presence.color,
             }}

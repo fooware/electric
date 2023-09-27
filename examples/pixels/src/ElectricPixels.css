@@ -1,13 +1,16 @@
-.electric-draw {
+.electric-pixels {
   display: flex;
   flex-direction: row;
   align-items: start;
-  --grid-size: calc(min(90vw, 80vh) - 100px);
+  background-color: rgb(28, 29, 33);
+  --grid-size: calc(min(90vw, 80vh, 800px) - 100px);
   --square-size: calc(var(--grid-size) / 32);
   --border: 0.5px solid #333;
+  padding: var(--square-size);
+  border-radius: var(--square-size);
 }
 
-.electric-draw__grid {
+.electric-pixels__grid {
   position: relative;
   display: grid;
   gap: 0;
@@ -18,36 +21,36 @@
   overflow: hidden;
 }
 
-.electric-draw__pixel {
+.electric-pixels__pixel {
   width: 100%;
   height: 100%;
   border: var(--border);
   margin: -0.5px;
 }
 
-.electric-draw__color-picker {
+.electric-pixels__color-picker {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
   border: var(--border);
   border-radius: 5px;
   overflow: hidden;
-  margin-right: 10px;
+  margin-right: var(--square-size);
 }
 
-.electric-draw__color-picker__color {
+.electric-pixels__color-picker__color {
   border: var(--border);
   margin: -0.5px;
   width: var(--square-size);
   height: var(--square-size);
 }
 
-.electric-draw__reset-button {
+.electric-pixels__reset-button {
   border: var(--border);
   background-color: #222;
   border-radius: 5px;
   padding: 0;
-  margin-top: 10px;
+  margin-top: calc(var(--square-size) / 2);
   width: var(--square-size);
   height: var(--square-size);
   color: #ddd;
@@ -56,21 +59,21 @@
   justify-content: center;
 }
 
-.electric-draw__reset-button > svg {
+.electric-pixels__reset-button > svg {
   width: 75%;
   height: 75%;
   display: block;
 }
 
-.electric-draw__reset-button:hover {
+.electric-pixels__reset-button:hover {
   background-color: #333;
 }
 
-.electric-draw__grid-wrapper {
+.electric-pixels__grid-wrapper {
   position: relative;
 }
 
-.electric-draw__presence {
+.electric-pixels__presence {
   position: absolute;
   top: 0;
   left: 0;
@@ -80,7 +83,7 @@
   pointer-events: none;
 }
 
-.electric-draw__presence__item {
+.electric-pixels__presence__item {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -89,14 +92,14 @@
   transition: transform 110ms linear;
 }
 
-.electric-draw__presence__item__icon {
+.electric-pixels__presence__item__icon {
   position: absolute;
   top: 0;
   left: 0;
   transform: translate(-80%, -20%);
 }
 
-.electric-draw__presence__item__color {
+.electric-pixels__presence__item__color {
   position: absolute;
   top: 0;
   left: 0;

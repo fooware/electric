@@ -68,7 +68,7 @@ Open [localhost:3001](http://localhost:3001) in your web browser.
 
 ## Develop
 
-`./src/ElectricDraw.tsx` has the main example code. For more information see the:
+`./src/ElectricPixels.tsx` has the main example code. For more information see the:
 
 - [Documentation](https://electric-sql.com/docs)
 - [Quickstart](https://electric-sql.com/docs/quickstart)
