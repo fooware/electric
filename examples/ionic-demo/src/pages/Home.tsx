@@ -35,7 +35,7 @@ const Home: React.FC = () => {
           schedule&nbsp;appointments.
         </p>
         <p className="ion-text-center ion-padding-bottom">
-          It is split into two workflows, one for the customer to schedule an
+          It's split into two workflows, one for the customer to schedule an
           appointment, and one for an employee to view and administer
           their&nbsp;calendar.
         </p>

@@ -24,7 +24,8 @@
     "test.unit": "vitest",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --skipLibCheck",
-    "format": "prettier --write --loglevel warn ."
+    "format": "prettier --write --loglevel warn .",
+    "make-icons": "npx @capacitor/assets generate"
   },
   "dependencies": {
     "@capacitor/android": "^5.4.1",
@@ -48,6 +49,7 @@
     "wa-sqlite": "rhashimoto/wa-sqlite#master"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.0",
     "@capacitor/cli": "5.4.1",
     "@databases/pg": "^5.4.1",
     "@electric-sql/prisma-generator": "latest",
