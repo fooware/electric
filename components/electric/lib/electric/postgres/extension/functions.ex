@@ -69,6 +69,7 @@ defmodule Electric.Postgres.Extension.Functions do
   defp assigns do
     %{
       ddl_table: Extension.ddl_table(),
+      electrified_index_table: Extension.electrified_index_table(),
       electrified_tracking_table: Extension.electrified_tracking_table(),
       publication_name: Extension.publication_name(),
       publication_sql: Extension.add_table_to_publication_sql("%I.%I"),

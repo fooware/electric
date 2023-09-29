@@ -1,13 +1,7 @@
 defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_ElectrifyFunction do
   alias Electric.Postgres.Extension
 
-  require EEx
-
   @behaviour Extension.Migration
-
-  sql_template = Path.expand("20230605141256_electrify_function/electrify.sql.eex", __DIR__)
-
-  @external_resource sql_template
 
   @impl true
   def version, do: 2023_06_05_14_12_56
@@ -18,13 +12,6 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
     electrified_index_table = Extension.electrified_index_table()
     event_triggers = Extension.event_triggers()
     event_trigger_tags = ["'ALTER TABLE'", "'DROP TABLE'", "'DROP INDEX'", "'DROP VIEW'"]
-
-    electrify_utility_functions =
-      electrify_utility_functions_sql(
-        schema,
-        electrified_tracking_table,
-        Extension.electrified_index_table()
-      )
 
     [
       """
@@ -49,7 +36,17 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
       );
       """,
       Extension.add_table_to_publication_sql(electrified_tracking_table),
-      electrify_utility_functions,
+      ##################
+      # Placeholder definition to be able to define the event trigger below.
+      # This function is redefined at run time.
+      """
+      CREATE OR REPLACE FUNCTION #{schema}.ddlx_sql_drop_handler()
+          RETURNS EVENT_TRIGGER AS $function$
+      BEGIN
+          NULL;
+      END;
+      $function$ LANGUAGE PLPGSQL;
+      """,
       """
       CREATE EVENT TRIGGER #{event_triggers[:sql_drop]} ON sql_drop
           WHEN TAG IN (#{Enum.join(event_trigger_tags, ", ")})
@@ -62,10 +59,4 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
   def down(_schema) do
     []
   end
-
-  EEx.function_from_file(:defp, :electrify_utility_functions_sql, sql_template, [
-    :schema,
-    :electrified_tracking_table,
-    :electrified_index_table
-  ])
 end

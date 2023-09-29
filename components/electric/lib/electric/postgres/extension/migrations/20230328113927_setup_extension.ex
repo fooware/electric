@@ -126,7 +126,8 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230328113927 do
       LANGUAGE PLPGSQL;
       """,
       ##################
-      # this function is over-written by later versions
+      # Placeholder definition to be able to define the event trigger below.
+      # This function is redefined at run time.
       """
       CREATE OR REPLACE FUNCTION #{schema}.ddlx_command_end_handler()
           RETURNS EVENT_TRIGGER AS $function$

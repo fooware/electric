@@ -1,0 +1,70 @@
+CREATE OR REPLACE FUNCTION <%= @schema %>.__table_schema(table_oid oid) RETURNS name AS $function$
+DECLARE
+   _schema name;
+BEGIN
+    SELECT pn.nspname INTO _schema
+        FROM pg_class pc
+        INNER JOIN pg_namespace pn ON pc.relnamespace = pn.oid
+        WHERE pc.oid = table_oid;
+    RETURN _schema;
+END;
+$function$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION <%= @schema %>.__resolve_table_from_names(
+    name1 text,
+    name2 text,
+    OUT schema_name name,
+    OUT table_name name,
+    OUT table_oid regclass
+) AS $function$
+DECLARE
+    _ident text[];
+BEGIN
+    IF name1 IS NULL AND name2 IS NULL THEN
+        RAISE EXCEPTION 'no valid table name given';
+    ELSIF name2 IS NULL THEN
+        -- handle table passed as 'schema.table'
+        IF strpos(name1, '.') > 0 THEN
+            _ident := parse_ident(name1);
+            IF array_length(_ident, 1) = 1 THEN
+                table_name := _ident[1];
+                table_oid := (SELECT quote_ident(table_name)::regclass);
+                schema_name := <%= @schema %>.__table_schema(table_oid);
+            ELSIF array_length(_ident, 1) = 2 THEN
+                schema_name := _ident[1];
+                table_name := _ident[2];
+            ELSE
+                RAISE EXCEPTION 'invalid table name given %', name1;
+            END IF;
+        ELSE
+            table_name := name1;
+            table_oid := (SELECT quote_ident(table_name)::regclass);
+            schema_name := <%= @schema %>.__table_schema(table_oid);
+        END IF;
+    ELSIF name1 IS NOT NULL AND name2 IS NOT NULL THEN
+        table_name := name2;
+        schema_name := name1;
+    ELSE
+        RAISE EXCEPTION 'no valid table name given';
+    END IF;
+END;
+$function$ LANGUAGE PLPGSQL STABLE;
+
+CREATE OR REPLACE FUNCTION <%= @schema %>.__table_is_electrified(classid oid, objid oid)
+RETURNS boolean AS $function$
+BEGIN
+    RETURN EXISTS (SELECT id FROM <%= @electrified_tracking_table %> WHERE oid = objid);
+END;
+$function$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE FUNCTION <%= @schema %>.__create_index_is_electrified(classid oid, objid oid)
+RETURNS int8 AS $function$
+DECLARE 
+    _eid int8;
+BEGIN
+    SELECT e.id INTO _eid FROM <%= @electrified_tracking_table %> e
+        INNER JOIN pg_index pi ON e.oid = pi.indrelid
+        WHERE pi.indexrelid = objid;
+    RETURN _eid;
+END;
+$function$ LANGUAGE PLPGSQL;

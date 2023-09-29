@@ -1,0 +1,36 @@
+CREATE OR REPLACE FUNCTION <%= @schema %>.ddlx_sql_drop_handler()
+RETURNS EVENT_TRIGGER AS $function$
+DECLARE
+    _capture bool := false;
+    _cmd record;
+    _trid int8;
+BEGIN
+    FOR _cmd IN SELECT * FROM pg_event_trigger_dropped_objects()
+    LOOP
+        RAISE DEBUG 'DROP // classid: %; objid: %; objsubid: %, object_type: %',
+            _cmd.classid, _cmd.objid, _cmd.objsubid, _cmd.object_type;
+        CASE
+            WHEN _cmd.object_type = 'table' THEN
+                IF <%= @schema %>.__table_is_electrified(_cmd.classid, _cmd.objid) THEN
+                    RAISE EXCEPTION 'dropping electrified table %', _cmd.object_identity;
+                END IF;
+            WHEN _cmd.object_type = 'table column' THEN
+                IF <%= @schema %>.__table_is_electrified(_cmd.classid, _cmd.objid) THEN
+                    RAISE EXCEPTION 'dropping column electrified table %', _cmd.object_identity;
+                END IF;
+            WHEN _cmd.object_type = 'index' THEN
+                IF EXISTS (SELECT id FROM <%= @electrified_index_table %> WHERE id = _cmd.objid) THEN
+                    -- clean up the electrified index table
+                    DELETE FROM <%= @electrified_index_table %> WHERE id = _cmd.objid;
+                    RAISE WARNING 'index is being dropped %', _capture;
+                    _capture := true;
+                END IF;
+            ELSE NULL;
+        END CASE;
+    END LOOP;
+
+    IF _capture THEN
+        _trid := (SELECT <%= @schema %>.capture_ddl());
+    END IF;
+END;
+$function$ LANGUAGE PLPGSQL;
