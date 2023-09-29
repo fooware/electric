@@ -481,6 +481,31 @@ defmodule Electric.Postgres.ExtensionTest do
                |> String.trim()
     end
 
+    test_tx "table electrification rejects default column expressions", fn conn ->
+      assert [
+               {:ok, [], []},
+               {:error, {:error, :error, _, :raise_exception, error_msg, _}}
+             ] =
+               :epgsql.squery(conn, """
+               CREATE TABLE public.t1 (
+                 id UUID PRIMARY KEY,
+                 t1 TEXT DEFAULT '',
+                 num INTEGER NOT NULL,
+                 "Ts" TIMESTAMP DEFAULT now(),
+                 name VARCHAR
+               );
+               CALL electric.electrify('public.t1');
+               """)
+
+      assert error_msg ==
+               """
+               Cannot electrify "public.t1" because some of its columns have DEFAULT expression which is not currently supported by Electric:
+                 t1
+                 "Ts"
+               """
+               |> String.trim()
+    end
+
     test_tx "electrified?/2", fn conn ->
       sql1 = "CREATE TABLE public.buttercup (id int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY);"
       sql2 = "CREATE TABLE public.daisy (id int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY);"

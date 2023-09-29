@@ -25,6 +25,7 @@ BEGIN
     END IF;
 
     PERFORM <%= @schema %>.__validate_table_column_types(_quoted_name);
+    PERFORM <%= @schema %>.__validate_table_column_defaults(_quoted_name);
 
     EXECUTE format('ALTER TABLE %I.%I REPLICA IDENTITY FULL;', _schema, _table);
 
