@@ -456,11 +456,11 @@ defmodule Electric.Postgres.ExtensionTest do
                  id UUID PRIMARY KEY,
                  c1 CHARACTER,
                  c2 CHARACTER(11),
-                 c3 VARCHAR(11),
+                 "C3" VARCHAR(11),
                  num8a INT8,
                  num8b BIGINT,
                  real4a FLOAT4,
-                 real4b REAL,
+                 "Real4b" REAL,
                  created_at TIMETZ
                );
                CALL electric.electrify('public.t1');
@@ -469,14 +469,14 @@ defmodule Electric.Postgres.ExtensionTest do
       assert error_msg ==
                """
                Cannot electrify "public.t1" because some of its columns have types not supported by Electric:
-                 "c1" character(1)
-                 "c2" character(11)
-                 "c3" character varying(11)
-                 "num8a" bigint
-                 "num8b" bigint
-                 "real4a" real
-                 "real4b" real
-                 "created_at" time with time zone
+                 c1 character(1)
+                 c2 character(11)
+                 "C3" character varying(11)
+                 num8a bigint
+                 num8b bigint
+                 real4a real
+                 "Real4b" real
+                 created_at time with time zone
                """
                |> String.trim()
     end
