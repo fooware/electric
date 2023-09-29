@@ -113,31 +113,6 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230328113927 do
       $function$ LANGUAGE PLPGSQL;
       """,
       ##################
-      # This function is overriden at Electric startup by a slightly modified defintion stored in
-      # `functions/create_active_migrations.sql.eex`. We're only keep the old version here so that the migration keeps
-      # working for new users.
-      #
-      # Once all function definitions are evaluated at Electric startup, as outlined in VAX-1016, we'll be able to
-      # remove this legacy one.
-      """
-      CREATE OR REPLACE FUNCTION #{schema}.create_active_migration(_txid #{@txid_type}, _txts timestamptz, _version text, _query text DEFAULT NULL) RETURNS int8 AS
-      $function$
-      DECLARE
-          trid int8;
-      BEGIN
-          IF _query IS NULL THEN
-              _query := current_query();
-          END IF;
-          RAISE DEBUG 'capture migration: % => %', _version, _query;
-          INSERT INTO #{ddl_table} (txid, txts, version, query) VALUES
-                (_txid, _txts, _version, _query)
-              RETURNING id INTO trid;
-          RETURN trid;
-      END;
-      $function$
-      LANGUAGE PLPGSQL;
-      """,
-      ##################
       """
       CREATE OR REPLACE FUNCTION #{schema}.active_migration_id() RETURNS int8 AS
       $function$
