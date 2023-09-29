@@ -68,8 +68,11 @@ defmodule Electric.Postgres.Extension.Functions do
   # This map of assigns is the same for all function templates.
   defp assigns do
     %{
-      schema: Extension.schema(),
       ddl_table: Extension.ddl_table(),
+      electrified_tracking_table: Extension.electrified_tracking_table(),
+      publication_name: Extension.publication_name(),
+      publication_sql: Extension.add_table_to_publication_sql("%I.%I"),
+      schema: Extension.schema(),
       txid_type: @txid_type
     }
   end

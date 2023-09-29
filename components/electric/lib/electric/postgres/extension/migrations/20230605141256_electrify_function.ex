@@ -16,17 +16,14 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
   def up(schema) do
     electrified_tracking_table = Extension.electrified_tracking_table()
     electrified_index_table = Extension.electrified_index_table()
-    publication = Extension.publication_name()
     event_triggers = Extension.event_triggers()
     event_trigger_tags = ["'ALTER TABLE'", "'DROP TABLE'", "'DROP INDEX'", "'DROP VIEW'"]
 
-    electrify_function =
-      electrify_function_sql(
+    electrify_utility_functions =
+      electrify_utility_functions_sql(
         schema,
         electrified_tracking_table,
-        Extension.electrified_index_table(),
-        publication,
-        Extension.add_table_to_publication_sql("%I.%I")
+        Extension.electrified_index_table()
       )
 
     [
@@ -52,10 +49,7 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
       );
       """,
       Extension.add_table_to_publication_sql(electrified_tracking_table),
-      # This function definition is included here because it is referenced in the definition of the electrify() function
-      # below it.
-      Extension.Functions.by_name(:validate_table_column_types),
-      electrify_function,
+      electrify_utility_functions,
       """
       CREATE EVENT TRIGGER #{event_triggers[:sql_drop]} ON sql_drop
           WHEN TAG IN (#{Enum.join(event_trigger_tags, ", ")})
@@ -69,11 +63,9 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230605141256_Electr
     []
   end
 
-  EEx.function_from_file(:defp, :electrify_function_sql, sql_template, [
+  EEx.function_from_file(:defp, :electrify_utility_functions_sql, sql_template, [
     :schema,
     :electrified_tracking_table,
-    :electrified_index_table,
-    :publication_name,
-    :publication_sql
+    :electrified_index_table
   ])
 end
