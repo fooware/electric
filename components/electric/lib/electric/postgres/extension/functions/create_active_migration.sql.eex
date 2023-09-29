@@ -1,3 +1,8 @@
+-- This function captures the "CREATE TABLE" statement for the table
+-- that's being electrified and stores it in the @ddl_table, in order for it
+-- to be sent over the logical replication stream to Electric and be consumed
+-- by the MigrationConsumer process there.
+
 CREATE OR REPLACE FUNCTION <%= @schema %>.create_active_migration(
     _txid <%= @txid_type %>,
     _txts timestamptz,

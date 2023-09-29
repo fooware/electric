@@ -1,3 +1,6 @@
+-- This function validates the type of each column of the table that's being electrified,
+-- to check if the type is supported by Electric.
+
 <%
   valid_column_types =
     ~w[

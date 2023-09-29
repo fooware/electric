@@ -1,3 +1,6 @@
+-- This function validates each column of the table that's being electrified
+-- and aborts electrification if any column has DEFAULT expression.
+
 CREATE OR REPLACE FUNCTION <%= @schema %>.__validate_table_column_defaults(table_name text)
 RETURNS VOID AS $function$
 DECLARE

@@ -1,14 +1,4 @@
 -- vim: set shiftwidth=4:tabstop=4
---
--- you can call electrify using one of these variants:
---
--- 1. `CALL electric.electrify('my_table')`
--- 2. `CALL electric.electrify('my_schema', 'my_table')`
--- 3. `CALL electric.electrify('my_schema.my_table')`
---
--- the first two formats also support special characters in the table/schema name:
---
--- 4. `CALL electric.electrify('My Schema', 'My Table')`
 
 CREATE OR REPLACE FUNCTION <%= schema %>.__pg_version() RETURNS integer AS $function$
     SELECT setting::int FROM pg_settings WHERE name = 'server_version_num'
