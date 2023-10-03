@@ -37,7 +37,7 @@ BEGIN
 
     IF _capture THEN
         _trid := (SELECT <%= @schema %>.capture_ddl());
-        RAISE DEBUG 'create_active_migration = %', _trid;
+        RAISE DEBUG 'capture_ddl = %', _trid;
 
         -- We're going to alter multiple tables here. We don't want to re-trigger this function.
         PERFORM set_config('<%= @schema %>.is_in_event_trigger', 'true', true);

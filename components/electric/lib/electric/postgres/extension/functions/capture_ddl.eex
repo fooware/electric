@@ -14,13 +14,13 @@ BEGIN
         INTO _txid, _txts, _version
         FROM <%= @schema %>.current_migration_version() v;
 
-    _trid := (SELECT <%= @schema %>.create_active_migration(_txid, _txts, _version, query));
+    _trid := (SELECT <%= @schema %>.__create_active_migration(_txid, _txts, _version, query));
 
     RETURN _trid;
 END;
 $function$ LANGUAGE PLPGSQL;
 
-CREATE OR REPLACE FUNCTION <%= @schema %>.create_active_migration(
+CREATE OR REPLACE FUNCTION <%= @schema %>.__create_active_migration(
     _txid <%= @txid_type %>,
     _txts timestamptz,
     _version text,
