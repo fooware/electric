@@ -1,0 +1,6 @@
+CREATE OR REPLACE FUNCTION <%= @schema %>.__table_is_electrified(classid oid, objid oid)
+RETURNS boolean AS $function$
+BEGIN
+    RETURN EXISTS (SELECT id FROM <%= @electrified_tracking_table %> WHERE oid = objid);
+END;
+$function$ LANGUAGE PLPGSQL;

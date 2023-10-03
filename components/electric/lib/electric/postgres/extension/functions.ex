@@ -7,7 +7,7 @@ defmodule Electric.Postgres.Extension.Functions do
   require EEx
 
   sql_files =
-    "functions/*.sql.eex"
+    "functions/**/*.sql.eex"
     |> Path.expand(__DIR__)
     |> Path.wildcard()
 

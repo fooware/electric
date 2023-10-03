@@ -19,7 +19,6 @@ defmodule Electric.Postgres.Extension.Migrations.Migration_20230512000000_confli
   def up(schema) do
     [
       @contents["electric_tag_type_and_operators"],
-      @contents["utility_functions"],
       # This function definition is included here because it is referenced in the definition of
       # "trigger_function_installers" below it.
       Extension.Functions.by_name(:perform_reordered_op_installer_function),
