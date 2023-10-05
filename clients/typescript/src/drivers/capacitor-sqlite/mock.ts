@@ -8,6 +8,9 @@ export class MockDatabase implements Database {
   executeSet(): Promise<capSQLiteChanges> {
     return this.resolveIfNotFail({ changes: { changes: 0 } })
   }
+  execute(): Promise<capSQLiteChanges> {
+    return this.resolveIfNotFail({ changes: { changes: 0 } })
+  }
 
   query(): Promise<DBSQLiteValues> {
     return this.resolveIfNotFail({

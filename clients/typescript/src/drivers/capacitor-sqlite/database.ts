@@ -14,6 +14,7 @@ export interface Database
     | 'executeSet'
     | 'query'
     | 'run'
+    | 'execute'
     | 'beginTransaction'
     | 'commitTransaction'
     | 'rollbackTransaction'

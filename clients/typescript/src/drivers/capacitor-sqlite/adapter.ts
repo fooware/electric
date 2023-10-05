@@ -20,40 +20,52 @@ export class DatabaseAdapter
     this.#txMutex = new Mutex()
   }
 
-  async run({ sql, args }: Statement): Promise<RunResult> {
+  async _runUncoordinated(
+    { sql, args }: Statement,
+    wrapInTransaction = false
+  ): Promise<RunResult> {
     if (args && !Array.isArray(args)) {
       throw new Error(
         `capacitor-sqlite doesn't support named query parameters, use positional parameters instead`
       )
     }
 
-    const wrapInTransaction = false // Default is true. electric calls run from within transaction<T> so we need to disable transactions here.
-
     const result = await this.db.run(sql, args, wrapInTransaction)
     const rowsAffected = result.changes?.changes ?? 0
     return { rowsAffected }
   }
 
-  async runInTransaction(...statements: Statement[]): Promise<RunResult> {
-    if (statements.some((x) => x.args && !Array.isArray(x.args))) {
-      throw new Error(
-        `capacitor-sqlite doesn't support named query parameters, use positional parameters instead`
-      )
-    }
-
-    const set: capSQLiteSet[] = statements.map(({ sql, args }) => ({
-      statement: sql,
-      values: (args ?? []) as SqlValue[],
-    }))
-
-    const wrapInTransaction = true
-    const result = await this.db.executeSet(set, wrapInTransaction)
-    const rowsAffected = result.changes?.changes ?? 0
-    // TODO: unsure how capacitor-sqlite populates the changes value (additive?), and what is expected of electric here.
-    return { rowsAffected }
+  async run({ sql, args }: Statement): Promise<RunResult> {
+    return this.#txMutex.runExclusive(() => {
+      return this._runUncoordinated({ sql, args }, true)
+    })
   }
 
-  async query({ sql, args }: Statement): Promise<Row[]> {
+  async runInTransaction(...statements: Statement[]): Promise<RunResult> {
+    const releaseMutex = await this.#txMutex.acquire()
+    try {
+      if (statements.some((x) => x.args && !Array.isArray(x.args))) {
+        throw new Error(
+          `capacitor-sqlite doesn't support named query parameters, use positional parameters instead`
+        )
+      }
+
+      const set: capSQLiteSet[] = statements.map(({ sql, args }) => ({
+        statement: sql,
+        values: (args ?? []) as SqlValue[],
+      }))
+
+      const wrapInTransaction = true
+      const result = await this.db.executeSet(set, wrapInTransaction)
+      const rowsAffected = result.changes?.changes ?? 0
+      // TODO: unsure how capacitor-sqlite populates the changes value (additive?), and what is expected of electric here.
+      return { rowsAffected }
+    } finally {
+      releaseMutex()
+    }
+  }
+
+  async _queryUncoordinated({ sql, args }: Statement): Promise<Row[]> {
     if (args && !Array.isArray(args)) {
       throw new Error(
         `capacitor-sqlite doesn't support named query parameters, use positional parameters instead`
@@ -63,6 +75,12 @@ export class DatabaseAdapter
     return result.values ?? []
   }
 
+  async query({ sql, args }: Statement): Promise<Row[]> {
+    return this.#txMutex.runExclusive(() => {
+      return this._queryUncoordinated({ sql, args })
+    })
+  }
+
   // No async await on capacitor-sqlite promise-based APIs + the complexity of the transaction<T> API make for one ugly implementation...
   async transaction<T>(
     f: (_tx: Tx, setResult: (res: T) => void) => void
@@ -70,40 +88,88 @@ export class DatabaseAdapter
     // Acquire mutex before even instantiating the transaction object.
     // This will ensure transactions cannot get interleaved.
     const releaseMutex = await this.#txMutex.acquire()
-    return new Promise<T>((resolve, reject) => {
-      // Convenience function. Rejecting should always release the acquired mutex.
+
+    try {
+      await this.db.execute('BEGIN', false)
+    } catch (e) {
+      releaseMutex()
+      throw e
+    }
+
+    return new Promise((resolve, reject) => {
       const releaseMutexAndReject = (err?: any) => {
+        // if the tx is rolled back, release the lock and reject the promise
         releaseMutex()
         reject(err)
       }
 
-      this.db
-        .beginTransaction()
-        .then(() => {
-          const wrappedTx = new WrappedTx(this)
-          try {
-            f(wrappedTx, (res) => {
-              // Client calls this setResult function when done. Commit and resolve.
-              this.db
-                .commitTransaction()
-                .then(() => {
-                  releaseMutex()
-                  resolve(res)
-                })
-                .catch((err) => releaseMutexAndReject(err))
+      const tx = new WrappedTx(this)
+
+      try {
+        f(tx, (res) => {
+          // Commit the transaction when the user sets the result.
+          // This assumes that the user does not execute any more queries after setting the result.
+          this.db
+            .execute('COMMIT', false)
+            .then(() => {
+              releaseMutex()
+              resolve(res)
             })
-          } catch (err) {
-            this.db
-              .rollbackTransaction()
-              .then(() => {
-                releaseMutexAndReject(err)
-              })
-              .catch((err) => releaseMutexAndReject(err))
-          }
+            .catch((err) => {
+              releaseMutexAndReject(err)
+            })
         })
-        .catch((err) => releaseMutexAndReject(err)) // Are all those catch -> rejects needed? Apparently, yes because of explicit promises. Tests confirm this.
+      } catch (err) {
+        this.db
+          .execute('ROLLBACK', false)
+          .then(() => {
+            releaseMutexAndReject(err)
+          })
+          .catch((err) => releaseMutexAndReject(err))
+      }
     })
   }
+
+  // async transaction<T>(
+  //   f: (_tx: Tx, setResult: (res: T) => void) => void
+  // ): Promise<T> {
+  //   // Acquire mutex before even instantiating the transaction object.
+  //   // This will ensure transactions cannot get interleaved.
+  //   const releaseMutex = await this.#txMutex.acquire()
+  //   return new Promise<T>((resolve, reject) => {
+  //     // Convenience function. Rejecting should always release the acquired mutex.
+  //     const releaseMutexAndReject = (err?: any) => {
+  //       releaseMutex()
+  //       reject(err)
+  //     }
+
+  //     this.db
+  //       .beginTransaction()
+  //       .then(() => {
+  //         const wrappedTx = new WrappedTx(this)
+  //         try {
+  //           f(wrappedTx, (res) => {
+  //             // Client calls this setResult function when done. Commit and resolve.
+  //             this.db
+  //               .commitTransaction()
+  //               .then(() => {
+  //                 releaseMutex()
+  //                 resolve(res)
+  //               })
+  //               .catch((err) => releaseMutexAndReject(err))
+  //           })
+  //         } catch (err) {
+  //           this.db
+  //             .rollbackTransaction()
+  //             .then(() => {
+  //               releaseMutexAndReject(err)
+  //             })
+  //             .catch((err) => releaseMutexAndReject(err))
+  //         }
+  //       })
+  //       .catch((err) => releaseMutexAndReject(err)) // Are all those catch -> rejects needed? Apparently, yes because of explicit promises. Tests confirm this.
+  //   })
+  // }
 }
 
 // Did consider handling begin/commit/rollback transaction in this wrapper, but in the end it made more sense
@@ -117,7 +183,7 @@ class WrappedTx implements Tx {
     errorCallback?: (error: any) => void
   ): void {
     this.adapter
-      .run(statement)
+      ._runUncoordinated(statement)
       .then((runResult) => {
         if (typeof successCallback !== 'undefined') {
           successCallback(this, runResult)
@@ -136,7 +202,7 @@ class WrappedTx implements Tx {
     errorCallback?: (error: any) => void
   ): void {
     this.adapter
-      .query(statement)
+      ._queryUncoordinated(statement)
       .then((result) => {
         if (typeof successCallback !== 'undefined') {
           successCallback(this, result)
