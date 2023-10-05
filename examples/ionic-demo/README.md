@@ -14,7 +14,11 @@
 
 # ElectricSQL & Ionic Example
 
-TODO...
+This is an example showing how to build an Ionic Framework app using ElectricSQL, including packaging if for iOS and Android using Capacitor.
+
+The app is a simple appointment scheduling app, the type you a company would use to schedule appointments with clients. It's split into two workflows, one for the customer to schedule an appointment, and one for an employee to view and administer their calendar.
+
+When built for the web it uses the wa-sqlite driver, for iOS and android it uses the capacitor-sqlite driver.
 
 ## Prereqs
 
@@ -68,9 +72,9 @@ npm run client:generate
 # or `npm run client:watch`` to re-generate whenever the DB schema changes
 ```
 
-## Run
+## Run the webapp
 
-The app is a React application to install and run it:
+The app is a React application, to run it:
 
 ```bash
 npm run start
@@ -79,3 +83,33 @@ ionic serve
 ```
 
 The app display the port on localhost where you can view the app.
+
+## Build and run the iOS app
+
+To build and run the app on an iOS device follow the prerequisites above and run:
+
+```
+ionic capacitor build ios
+```
+
+Xcode should open ready for running in the simulator or on a tethered device.
+
+When testing in the iOS simulator, the device can see the Electric sync service on your `localhost`, however when running on another device you will need to build with an accessible `ELECTRIC_URL`. Note that as the app connects to the sync service with a web socket, when running on a different host you have to use SSL (wss://). The easiest way to do this is with a service such as [ngrok](http://ngrok.com). For example:
+
+```
+ngrok http 5133
+```
+
+Then in another terminal with the url provided by ngrok
+
+```
+ELECTRIC_URL=https://abcdef123456.ngrok.app ionic capacitor build ios
+```
+
+## Build and run the Android app
+
+To build and run the app on an iOS device follow the prerequisites above and run the following command, note you will have to expose your sync service on a an SSL enabled endpoint (see iOS instruction for an example with ngrok).
+
+```
+ELECTRIC_URL=https://hostname.of.sync.service ionic capacitor build android
+```
