@@ -1,8 +1,9 @@
 import { LIB_VERSION } from 'electric-sql/version'
+import { ElectricConfig } from 'electric-sql'
 import { makeElectricContext } from 'electric-sql/react'
 import { uniqueTabId, genUUID } from 'electric-sql/util'
 import { insecureAuthToken } from 'electric-sql/auth'
-import { electrify, ElectricDatabase } from 'electric-sql/wa-sqlite'
+import { Capacitor } from '@capacitor/core'
 import { Electric, schema, Appointments } from './generated/client'
 
 export const { ElectricProvider, useElectric } = makeElectricContext<Electric>()
@@ -42,13 +43,30 @@ export const initElectric = async () => {
     debug: DEBUG,
   }
 
+  return Capacitor.isNativePlatform()
+    ? await initCapacitorSQLite(dbName, config)
+    : await initWaSQLite(dbName, config)
+}
+
+async function initWaSQLite(dbName: string, config: ElectricConfig) {
+  const { ElectricDatabase, electrify } = await import('electric-sql/wa-sqlite')
   const conn = await ElectricDatabase.init(dbName, distPath)
-  if (DEBUG) {
-    console.log('initElectric')
-    console.log('dbName', dbName)
-    console.log(conn)
-    console.log(schema)
-    console.log(config)
-  }
+  return await electrify(conn, schema, config)
+}
+
+async function initCapacitorSQLite(dbName: string, config: ElectricConfig) {
+  const { electrify } = await import('electric-sql/capacitor')
+  const { CapacitorSQLite, SQLiteConnection } = await import(
+    '@capacitor-community/sqlite'
+  )
+  const sqliteConnection = new SQLiteConnection(CapacitorSQLite)
+  const conn = await sqliteConnection.createConnection(
+    dbName,
+    false,
+    '',
+    1,
+    false,
+  )
+  await conn.open()
   return await electrify(conn, schema, config)
 }
