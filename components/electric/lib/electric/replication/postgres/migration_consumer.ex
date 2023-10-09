@@ -4,6 +4,7 @@ defmodule Electric.Replication.Postgres.MigrationConsumer do
   """
   use GenStage
 
+  alias Electric.Postgres.OidDatabase
   alias Electric.Telemetry.Metrics
   alias Electric.Replication.Connectors
 
@@ -168,7 +169,11 @@ defmodule Electric.Replication.Postgres.MigrationConsumer do
 
   defp transaction_changes_to_migrations(%Transaction{changes: changes}, state) do
     for %NewRecord{record: record, relation: relation} <- changes, is_ddl_relation(relation) do
-      {:ok, version} = SchemaLoader.tx_version(state.loader, record)
+      # |> IO.inspect(label: :tx_version)
+      {:ok, version} =
+        SchemaLoader.tx_version(state.loader, record)
+
+      # |> IO.inspect(label: :extract_ddl_sql)
       {:ok, sql} = Extension.extract_ddl_sql(record)
       {version, sql}
     end
@@ -233,12 +238,65 @@ defmodule Electric.Replication.Postgres.MigrationConsumer do
     schema =
       Enum.reduce(stmts, schema, fn stmt, schema ->
         Logger.info("Applying migration #{version}: #{inspect(stmt)}")
+
         Schema.update(schema, stmt, oid_loader: oid_loader)
+        # |> IO.inspect(pretty: true, label: :schema_after_migration)
+        |> refresh_type_cache_from_schema(loader)
       end)
       |> Schema.add_shadow_tables(oid_loader: oid_loader)
 
     Logger.info("Saving schema version #{version} /#{inspect(loader)}/")
 
     {:ok, _loader} = SchemaLoader.save(loader, version, schema, stmts)
+  end
+
+  defp refresh_type_cache_from_schema(schema, loader) do
+    %Electric.Postgres.Schema.Proto.Schema{
+      tables: tables
+    } = schema
+
+    for table <- tables do
+      %Electric.Postgres.Schema.Proto.Table{
+        name: %Electric.Postgres.Schema.Proto.RangeVar{
+          name: table_name,
+          schema: table_schema,
+          alias: nil
+        },
+        columns: columns
+      } = table
+
+      for col <- columns do
+        %Electric.Postgres.Schema.Proto.Column{
+          name: col_name,
+          type: %Electric.Postgres.Schema.Proto.Column.Type{name: col_type_name}
+        } = col |> IO.inspect()
+
+        namespaced_type_name = (table_schema <> "." <> col_type_name) |> IO.inspect()
+
+        if not Electric.Postgres.OidDatabase.has_oid_for_name?(col_type_name) and
+             not Electric.Postgres.OidDatabase.has_oid_for_name?(namespaced_type_name) do
+          {:ok, oids} = SchemaLoader.query_oids(loader)
+          OidDatabase.save_oids(oids)
+        end
+
+        try do
+          IO.inspect(Electric.Postgres.OidDatabase.oid_for_name(col_type_name),
+            label: :col_type_name
+          )
+        catch
+          _, _ -> nil
+        end
+
+        try do
+          IO.inspect(Electric.Postgres.OidDatabase.oid_for_name(namespaced_type_name),
+            label: :namespaced_type_name
+          )
+        catch
+          _, _ -> nil
+        end
+      end
+    end
+
+    schema
   end
 end

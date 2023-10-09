@@ -28,18 +28,28 @@ defmodule Electric.Postgres.OidDatabase do
   @doc """
   Get the type OID by the name atom
   """
-  @spec oid_for_name(atom() | {:array, atom()}) :: integer()
+  @spec oid_for_name(atom() | binary | {:array, atom() | binary}) :: integer()
   def oid_for_name({:array, element_name}) do
-    case :ets.match(@ets_table_name, pg_type(name: element_name, array_oid: :"$1")) do
+    case :ets.match(@ets_table_name, pg_type(name: to_string(element_name), array_oid: :"$1")) do
       [[oid]] -> oid
-      _ -> raise("Unknown name {:array, #{element_name}}")
+      _ -> raise("Unknown name {:array, #{inspect(element_name)}}")
     end
   end
 
   def oid_for_name(name) do
-    case :ets.match(@ets_table_name, pg_type(name: name, oid: :"$1")) do
+    IO.puts("oid_for_name(#{inspect(name)})")
+
+    case :ets.match(@ets_table_name, pg_type(name: to_string(name), oid: :"$1"))
+         |> IO.inspect() do
       [[oid]] -> oid
       _ -> raise("Unknown name #{name}")
+    end
+  end
+
+  def has_oid_for_name?(name) do
+    case :ets.match(@ets_table_name, pg_type(name: to_string(name), oid: :"$1")) do
+      [[_oid]] -> true
+      _ -> false
     end
   end
 
@@ -56,7 +66,7 @@ defmodule Electric.Postgres.OidDatabase do
   def type_length(name) do
     case :ets.match(@ets_table_name, pg_type(name: name, length: :"$1")) do
       [[len]] -> len
-      _ -> raise("Unknown name #{name}")
+      _ -> raise("Unknown name #{inspect(name)}")
     end
   end
 
@@ -69,7 +79,9 @@ defmodule Electric.Postgres.OidDatabase do
         read_concurrency: true
       )
 
+    IO.puts("OidDatabase init")
     ETS.Set.put(table, Electric.Postgres.OidDatabase.Defaults.get_defaults())
+    IO.inspect(:ets.info(@ets_table_name))
 
     {:ok, %{table: table}}
   end

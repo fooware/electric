@@ -10,8 +10,8 @@ defmodule Electric.Postgres.Replication do
     defstruct [
       :name,
       :type,
+      :type_oid,
       :nullable?,
-      :oid,
       type_modifier: -1,
       part_of_identity?: false
     ]
@@ -21,8 +21,8 @@ defmodule Electric.Postgres.Replication do
     @type t() :: %__MODULE__{
             name: name(),
             type: atom(),
+            type_oid: pos_integer(),
             nullable?: boolean(),
-            oid: pos_integer(),
             type_modifier: integer(),
             part_of_identity?: boolean() | nil
           }

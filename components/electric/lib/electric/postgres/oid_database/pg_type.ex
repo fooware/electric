@@ -39,9 +39,12 @@ defmodule Electric.Postgres.OidDatabase.PgType do
       do:
         pg_type(
           oid: String.to_integer(oid),
-          namespace: String.to_atom(namespace),
+          namespace: namespace,
           name:
-            String.to_atom(if namespace == "pg_catalog", do: name, else: namespace <> "." <> name),
+            if(namespace == "pg_catalog",
+              do: name,
+              else: IO.inspect(namespace <> "." <> name, label: :pg_type_from_tuple)
+            ),
           array_oid: String.to_integer(array_oid),
           element_oid: String.to_integer(element_oid),
           length: String.to_integer(len),

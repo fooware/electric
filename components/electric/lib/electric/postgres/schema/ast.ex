@@ -217,6 +217,7 @@ defmodule Electric.Postgres.Schema.AST do
   def map(%Pg.CreateStmt{} = action, opts) do
     name = map(action.relation, opts)
 
+    # IO.puts("Schema.AST.map(#{inspect(action, pretty: true)}); name = #{inspect(name)}")
     {:ok, oid} = oid_loader(opts).(:table, name.schema, name.name)
 
     Enum.reduce(
@@ -455,6 +456,7 @@ defmodule Electric.Postgres.Schema.AST do
   end
 
   defp create_table(%{node: {:column_def, _}} = node, table, opts) do
+    # IO.puts("add_column(#{inspect(node, pretty: true)}, #{inspect(table)}, #{inspect(opts)})")
     add_column(node, table, opts)
   end
 

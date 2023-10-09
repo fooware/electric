@@ -218,4 +218,11 @@ defmodule Electric.Postgres.Extension.SchemaLoader.Epgsql do
       Extension.tx_version(conn, row)
     end)
   end
+
+  @impl true
+  def query_oids(pool) do
+    checkout!(pool, fn conn ->
+      Electric.Replication.Postgres.Client.query_oids(conn)
+    end)
+  end
 end

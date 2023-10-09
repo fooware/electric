@@ -192,6 +192,7 @@ defmodule Electric.Postgres.Schema do
         %Replication.Column{
           name: col.name,
           type: col_type(col.type),
+          type_oid: 0,
           nullable?: col_nullable?(col),
           type_modifier: List.first(col.type.size, -1),
           # since we're using replication identity "full" all columns

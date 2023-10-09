@@ -419,7 +419,7 @@ defmodule Electric.Satellite.WsValidationsTest do
       migrate(
         ctx.db,
         vsn,
-        "CREATE TYPE coffee AS ENUM ('espresso', 'latte'); CREATE TABLE public.foo (id TEXT PRIMARY KEY, cup_of coffee)",
+        "CREATE TYPE public.coffee AS ENUM ('espresso', 'latte'); CREATE TABLE public.foo (id TEXT PRIMARY KEY, cup_of coffee)",
         electrify: "public.foo"
       )
 

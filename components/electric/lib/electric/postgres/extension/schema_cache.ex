@@ -94,6 +94,11 @@ defmodule Electric.Postgres.Extension.SchemaCache do
   end
 
   @impl SchemaLoader
+  def query_oids(origin) do
+    call(origin, :query_oids)
+  end
+
+  @impl SchemaLoader
   def primary_keys(origin, {schema, name}) do
     call(origin, {:primary_keys, schema, name})
   end
@@ -273,6 +278,10 @@ defmodule Electric.Postgres.Extension.SchemaCache do
     {:reply, SchemaLoader.relation_oid(state.backend, type, schema, name), state}
   end
 
+  def handle_call(:query_oids, _from, state) do
+    {:reply, SchemaLoader.query_oids(state.backend), state}
+  end
+
   def handle_call({:primary_keys, sname, tname}, _from, state) do
     {result, state} =
       with {{:ok, _version, schema}, state} <- current_schema(state) do
@@ -304,7 +313,7 @@ defmodule Electric.Postgres.Extension.SchemaCache do
   def handle_call({:table_electrified?, sname, tname}, _from, state) do
     # delegate this call directly to the extension metadata tables to avoid race conditions
     # that can happen between an 'electrify table' call and the receipt of the
-    # migration via the replication stream - it's important that this function 
+    # migration via the replication stream - it's important that this function
     # be consistent with the state of the db, not our slightly laggy view on it
     {:reply, SchemaLoader.table_electrified?(state.backend, {sname, tname}), state}
   end
