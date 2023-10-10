@@ -11,11 +11,8 @@
 
 -- Create a simple pixels table.
 CREATE TABLE IF NOT EXISTS pixels (
-  id TEXT PRIMARY KEY NOT NULL,
-  x INT NOT NULL,
-  y INT NOT NULL,
-  color TEXT NOT NULL,
-  added_at TEXT NOT NULL
+  coords TEXT PRIMARY KEY NOT NULL,
+  color TEXT NOT NULL
 );
 
 -- Create a table to track the presence of users.

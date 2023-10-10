@@ -83,11 +83,7 @@ export const ElectricPixels = ({
   const canvasEl = useRef<HTMLDivElement>(null)
   const clientId = (satellite as any)._authState.clientId
 
-  const { results } = useLiveQuery(
-    db.pixels.liveMany({
-      orderBy: { added_at: 'asc' },
-    })
-  )
+  const { results } = useLiveQuery(db.pixels.liveMany())
   const [mouseDown, setMouseDown] = useState(false)
 
   const width = 32
@@ -148,8 +144,7 @@ export const ElectricPixels = ({
     const pixels: PixelMap = { ...defaultPixels }
 
     results?.forEach((pixel) => {
-      const key = `${pixel.x},${pixel.y}`
-      pixels[key] = pixel.color
+      pixels[pixel.coords] = pixel.color
     })
 
     return pixels
@@ -157,13 +152,16 @@ export const ElectricPixels = ({
 
   const drawPixel = useCallback(
     async (x: number, y: number) => {
-      await db.pixels.create({
-        data: {
-          id: genUUID(),
-          x,
-          y,
+      await db.pixels.upsert({
+        create: {
+          coords: `${x},${y}`,
           color: selectedColor,
-          added_at: new Date().toISOString(),
+        },
+        update: {
+          color: selectedColor,
+        },
+        where: {
+          coords: `${x},${y}`,
         },
       })
     },
