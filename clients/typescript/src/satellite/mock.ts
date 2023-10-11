@@ -244,8 +244,8 @@ export class MockSatelliteClient extends EventEmitter implements Client {
     this.removeListener('error', cb)
   }
 
-  isDisconnected(): boolean {
-    return this.disconnected
+  isConnected(): boolean {
+    return !this.disconnected
   }
 
   shutdown(): void {
