@@ -123,6 +123,8 @@ interface SafeEventEmitter {
   removeListener(event: 'outbound_started', callback: () => void): void
   // TODO: missing removeListeners
 
+  removeAllListeners(): void
+
   listenerCount(event: 'error'): number
 }
 
@@ -147,6 +149,8 @@ export class SatelliteClient implements Client {
   private service: Root
   private incomingMutex: Mutex = new Mutex()
   private allowedMutexedRpcResponses: Array<keyof Root> = []
+
+  private isDown: boolean = false
 
   private handlerForMessageType: { [k: string]: IncomingHandler } =
     Object.fromEntries(
@@ -210,15 +214,21 @@ export class SatelliteClient implements Client {
   }
 
   async connect(): Promise<void> {
-    if (!this.isClosed()) {
-      this.close()
+    if (this.isDown) {
+      throw new SatelliteError(
+        SatelliteErrorCode.UNEXPECTED_STATE,
+        'client has already shutdown'
+      )
+    }
+    if (!this.isDisconnected()) {
+      this.disconnect()
     }
 
     return new Promise<void>((resolve, reject) => {
       this.socket = new this.socketFactory(PROTOCOL_VSN)
 
       const onceError = (error: Error) => {
-        this.close()
+        this.disconnect()
         reject(error)
       }
 
@@ -235,7 +245,7 @@ export class SatelliteClient implements Client {
         this.socket.onMessage(this.socketHandler)
         this.socket.onError((error) => {
           if (this.emitter.listenerCount('error') === 0) {
-            this.close()
+            this.disconnect()
             Log.error(
               `socket error but no listener is attached: ${error.message}`
             )
@@ -243,7 +253,7 @@ export class SatelliteClient implements Client {
           this.emitter.emit('error', error)
         })
         this.socket.onClose(() => {
-          this.close()
+          this.disconnect()
           if (this.emitter.listenerCount('error') === 0) {
             Log.error(`socket closed but no listener is attached`)
           }
@@ -265,7 +275,7 @@ export class SatelliteClient implements Client {
     })
   }
 
-  close() {
+  disconnect() {
     this.outbound = this.resetReplication(this.outbound.last_lsn)
     this.inbound = this.resetReplication(this.inbound.last_lsn)
 
@@ -277,8 +287,14 @@ export class SatelliteClient implements Client {
     }
   }
 
-  isClosed(): boolean {
+  isDisconnected(): boolean {
     return !this.socketHandler
+  }
+
+  shutdown(): void {
+    this.disconnect()
+    this.emitter.removeAllListeners()
+    this.isDown = true
   }
 
   async startReplication(
@@ -964,7 +980,7 @@ export class SatelliteClient implements Client {
 
   private sendMessage<T extends SatPbMsg>(request: T) {
     if (Log.getLevel() <= 1) Log.debug(`[proto] send: ${msgToString(request)}`)
-    if (!this.socket || this.isClosed()) {
+    if (!this.socket || this.isDisconnected()) {
       throw new SatelliteError(
         SatelliteErrorCode.UNEXPECTED_STATE,
         'trying to send message, but client is closed'

@@ -61,7 +61,7 @@ export interface Satellite {
   connectivityState?: ConnectivityState
 
   start(authConfig: AuthConfig): Promise<ConnectionWrapper>
-  stop(): Promise<void>
+  stop(shutdown: boolean): Promise<void>
   subscribe(
     shapeDefinitions: ClientShapeDefinition[]
   ): Promise<ShapeSubscription>
@@ -70,9 +70,10 @@ export interface Satellite {
 
 export interface Client {
   connect(): Promise<void>
-  close(): void
+  disconnect(): void
+  shutdown(): void
   authenticate(authState: AuthState): Promise<AuthResponse>
-  isClosed(): boolean
+  isDisconnected(): boolean
   startReplication(
     lsn?: LSN,
     schemaVersion?: string,
