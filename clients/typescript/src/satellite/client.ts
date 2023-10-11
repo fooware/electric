@@ -150,7 +150,7 @@ export class SatelliteClient implements Client {
   private incomingMutex: Mutex = new Mutex()
   private allowedMutexedRpcResponses: Array<keyof Root> = []
 
-  private isDown: boolean = false
+  private isDown = false
 
   private handlerForMessageType: { [k: string]: IncomingHandler } =
     Object.fromEntries(

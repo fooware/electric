@@ -1,18 +1,11 @@
 import { mkdir, rm as removeFile } from 'node:fs/promises'
-import {
-  ConnectivityState,
-  DataTransaction,
-  Relation,
-  RelationsCache,
-  SqlValue,
-  randomValue,
-} from '../../src/util'
+import { randomValue } from '../../src/util'
 import Database from 'better-sqlite3'
 import { DatabaseAdapter } from '../../src/drivers/better-sqlite3'
 import { BundleMigrator } from '../../src/migrators'
 import { EventNotifier, MockNotifier } from '../../src/notifiers'
 import { MockSatelliteClient } from '../../src/satellite/mock'
-import { Satellite, SatelliteProcess } from '../../src/satellite'
+import { SatelliteProcess } from '../../src/satellite'
 import { TableInfo, initTableInfo } from '../support/satellite-helpers'
 import { satelliteDefaults, SatelliteOpts } from '../../src/satellite/config'
 
@@ -82,7 +75,6 @@ export const relations = {
 import migrations from '../support/migrations/migrations.js'
 import { ExecutionContext } from 'ava'
 import { AuthState } from '../../src/auth'
-import { OplogEntry } from '../../src/satellite/oplog'
 
 // Speed up the intervals for testing.
 export const opts = Object.assign({}, satelliteDefaults, {
