@@ -1,5 +1,12 @@
 # @core/electric
 
+## 0.6.5
+
+### Patch Changes
+
+- 0ef13aa8: [VAX-907] Add a proxy for migration introspection and capture
+- 2a480884: [VAX-1195] Allow for user-set migration version to override automatically assigned version
+
 ## 0.6.4
 
 ### Patch Changes

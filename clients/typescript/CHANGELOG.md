@@ -1,5 +1,18 @@
 # electric-sql
 
+## 0.7.0
+
+### Minor Changes
+
+- 3d98c1f6: New DB driver for capacitor-sqlite.
+
+### Patch Changes
+
+- 0e24343d: [VAX-1078] Fix the issue where the client was unable to sync local writes of whole numbers to float columns.
+- 226c0048: Fix bug for table named "model"
+- d5ed97fc: prevent reconnect loop of doom on fatal errors
+- b5ba4823: Fix error that table already exists when re-generating client after having previously received a migration over the replication stream.
+
 ## 0.6.4
 
 ### Patch Changes
